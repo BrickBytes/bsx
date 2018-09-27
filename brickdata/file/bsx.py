@@ -19,7 +19,7 @@ def _enum_ensurer(enumtype: _enum.EnumMeta
 def _is_binary(fp: _typing.io) -> bool:
   # https://stackoverflow.com/a/44584871/2334951
   if hasattr(fp, "mode"):
-    return "b" in f.mode
+    return "b" in fp.mode
   else:
     return isinstance(fp, (_io.RawIOBase, _io.BufferedIOBase))
 
@@ -193,10 +193,11 @@ def dumps(obj: dict, *,
     skip_decode = False,
 ) -> _typing.Union[str, bytes]:
   root = obj2root(obj)
-  b = etree.tostring(
+  b = b'<?xml version="1.0" encoding="UTF-8"?>\n'
+  b += _etree.tostring(
       root,
       pretty_print = pretty_print,
-      xml_declaration = True,
+      xml_declaration = False,
       encoding = XML_ENCODING,
       doctype = XML_DOCTYPE,
   )
@@ -284,7 +285,9 @@ def inventory_o2e(inventory_o: dict) -> _etree.Element:
         continue
       property_e = _etree.Element(property_tag.value)
       item_e.append(property_e)
-      if cast_func is not bool:
+      if cast_func is float:
+        property_e.text = f'{cast_func(property_v):.3f}'
+      elif cast_func is not bool:
         property_e.text = str(cast_func(property_v))
   return result
 
